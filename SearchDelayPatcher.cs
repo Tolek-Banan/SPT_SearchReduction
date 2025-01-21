@@ -11,10 +11,6 @@ namespace SearchReductionPlugin
     {
         private static readonly ManualLogSource logger = BepInEx.Logging.Logger.CreateLogSource("SearchReduction:Delay");
 
-        private static readonly FieldInfo bool1Field = typeof(GClass3231).GetField("bool_1", BindingFlags.NonPublic | BindingFlags.Instance);
-        private static readonly FieldInfo bool0Field = typeof(GClass3231).GetField("bool_0", BindingFlags.NonPublic | BindingFlags.Instance);
-        private static readonly FieldInfo cancellationTokenSourceField = typeof(GClass3231).GetField("cancellationTokenSource_0", BindingFlags.NonPublic | BindingFlags.Instance);
-
         public void Enable()
         {
             var harmony = new Harmony("com.yourname.searchreductionplugin");
@@ -46,9 +42,10 @@ namespace SearchReductionPlugin
         {
             try
             {
-                var bool_1 = (bool)bool1Field.GetValue(__instance);
-                var bool_0 = (bool)bool0Field.GetValue(__instance);
-                var cancellationTokenSource = (CancellationTokenSource)cancellationTokenSourceField.GetValue(__instance);
+                // Zastosowanie metody GetFieldValue w celu uzyskania wartości pól
+                var bool_1 = GetFieldValue<bool>(__instance, "bool_1");
+                var bool_0 = GetFieldValue<bool>(__instance, "bool_0");
+                var cancellationTokenSource = GetFieldValue<CancellationTokenSource>(__instance, "cancellationTokenSource_0");
 
                 if (bool_1)
                 {
@@ -60,12 +57,14 @@ namespace SearchReductionPlugin
                             return;
                         }
 
+                        // Obliczenie opóźnienia, używając mnożnika
                         var delay = (int)(2000 * SearchReductionPlugin.SearchDelayMultiplier.Value);
                         logger.LogInfo($"Delay set to: {delay} ms (delay multiplier: {SearchReductionPlugin.SearchDelayMultiplier.Value})");
                         await Task.Delay(delay, cancellationTokenSource.Token);
                         logger.LogInfo("Delay finished, continuing search.");
                     }
 
+                    // Kontynuowanie wyszukiwania przedmiotu
                     __instance.SearchItem();
                 }
             }
@@ -80,6 +79,29 @@ namespace SearchReductionPlugin
             finally
             {
                 logger.LogInfo("End of Method5Prefix.");
+            }
+        }
+
+        // Generic method to get field value dynamically
+        private static T GetFieldValue<T>(object instance, string fieldName)
+        {
+            try
+            {
+                var fieldInfo = typeof(GClass3231).GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
+                if (fieldInfo != null)
+                {
+                    return (T)fieldInfo.GetValue(instance);
+                }
+                else
+                {
+                    logger.LogWarning($"Field '{fieldName}' not found.");
+                    return default;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Error accessing field '{fieldName}': {ex.GetType()} - {ex.Message}");
+                return default;
             }
         }
     }

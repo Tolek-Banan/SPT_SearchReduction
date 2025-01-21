@@ -44,36 +44,29 @@ namespace SearchReductionPlugin
         {
             try
             {
-                var profileFieldInfo = typeof(GClass3231).GetField("profile_0", BindingFlags.NonPublic | BindingFlags.Instance);
-                var profile_0 = profileFieldInfo?.GetValue(__instance) as Profile;
-
+                // Dynamic access to profile_0, iplayerSearchController_0, and other fields
+                var profile_0 = GetFieldValue<Profile>(__instance, "profile_0");
                 if (profile_0 == null)
                 {
                     logger.LogError("Failed to access 'profile_0' field.");
                     return;
                 }
 
-                var searchControllerFieldInfo = typeof(GClass3231).GetField("iplayerSearchController_0", BindingFlags.NonPublic | BindingFlags.Instance);
-                var iplayerSearchController_0 = searchControllerFieldInfo?.GetValue(__instance) as IPlayerSearchController;
-
+                var iplayerSearchController_0 = GetFieldValue<IPlayerSearchController>(__instance, "iplayerSearchController_0");
                 if (iplayerSearchController_0 == null)
                 {
                     logger.LogError("Failed to access 'iplayerSearchController_0' field.");
                     return;
                 }
 
-                var itemFieldInfo = typeof(GClass3231).GetField("Item", BindingFlags.NonPublic | BindingFlags.Instance);
-                var item = itemFieldInfo?.GetValue(__instance) as SearchableItemItemClass;
-
+                var item = GetFieldValue<SearchableItemItemClass>(__instance, "Item");
                 if (item == null)
                 {
                     logger.LogError("Failed to access 'Item' field.");
                     return;
                 }
 
-                var cancellationTokenSourceFieldInfo = typeof(GClass3231).GetField("cancellationTokenSource_0", BindingFlags.NonPublic | BindingFlags.Instance);
-                var cancellationTokenSource_0 = cancellationTokenSourceFieldInfo?.GetValue(__instance) as CancellationTokenSource;
-
+                var cancellationTokenSource_0 = GetFieldValue<CancellationTokenSource>(__instance, "cancellationTokenSource_0");
                 if (cancellationTokenSource_0 == null)
                 {
                     logger.LogError("Failed to access 'cancellationTokenSource_0' field.");
@@ -82,6 +75,7 @@ namespace SearchReductionPlugin
 
                 bool bool_0 = __instance.Boolean_0;
 
+                // Check for unknown items
                 if (iplayerSearchController_0.ContainsUnknownItems(item))
                 {
                     logger.LogInfo("Found unknown items.");
@@ -89,6 +83,7 @@ namespace SearchReductionPlugin
                     bool flag = item.Parent.GetOwner().RootItem is InventoryEquipment;
                     IInventoryProfileSkillInfo skillsInfo = profile_0.SkillsInfo;
 
+                    // Calculating delay factor based on the profile and item class
                     float num = (flag ? (1f + skillsInfo.AttentionLootSpeedValue + skillsInfo.SearchBuffSpeedValue) : (1f + skillsInfo.AttentionLootSpeedValue));
                     logger.LogInfo($"Calculated delay factor: {num}");
 
@@ -102,7 +97,6 @@ namespace SearchReductionPlugin
                         }
 
                         float delayMultiplier = SearchReductionPlugin.SearchTimeMultiplier.Value;
-
                         float randomizedDelay = UnityEngine.Random.Range(1, 3) / num;
                         float delayInMilliseconds = (bool_0 ? 0f : randomizedDelay) * 1000f * delayMultiplier;
 
@@ -153,6 +147,29 @@ namespace SearchReductionPlugin
             finally
             {
                 logger.LogInfo("End of Method6Prefix.");
+            }
+        }
+
+        // Generic method to get field value dynamically
+        private static T GetFieldValue<T>(object instance, string fieldName)
+        {
+            try
+            {
+                var fieldInfo = typeof(GClass3231).GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
+                if (fieldInfo != null)
+                {
+                    return (T)fieldInfo.GetValue(instance);
+                }
+                else
+                {
+                    logger.LogWarning($"Field '{fieldName}' not found.");
+                    return default;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Error accessing field '{fieldName}': {ex.GetType()} - {ex.Message}");
+                return default;
             }
         }
     }
